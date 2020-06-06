@@ -1,5 +1,7 @@
+import matplotlib.pyplot as plt
 import numpy as np
 import wave
+from scipy import signal
 import sys
 from typing import Text, Tuple
 
@@ -48,6 +50,7 @@ def read_wav_file(file: Text) -> Tuple[int, np.ndarray]:
 
 
 def force_wav_data_to_mono(wav_data: np.ndarray):
+    """ Converts two channel wav data to a single channel"""
     ndims = len(wav_data.shape)
     if ndims == 1:
         return wav_data
@@ -68,3 +71,15 @@ class Sound:
         wav_array = force_wav_data_to_mono(wav_array)
         return Sound(wav_array, sampling_freq)
 
+    # TODO(kane): Add support for spectrogram configuration
+    def compute_spectrogram(self):
+        return signal.spectrogram(self._time_series, self._sampling_freq)
+
+    # TODO(kane): Add support for plot configuration
+    def plot_spectrogram(self):
+        f, t, Sxx = self.compute_spectrogram()
+        plt.pcolormesh(t, f, Sxx)
+        plt.ylabel('Frequency [Hz]')
+        plt.xlabel('Time [sec]')
+        plt.ylim(0, 1000)
+        plt.show()
