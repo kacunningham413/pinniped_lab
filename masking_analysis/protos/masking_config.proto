@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package sound;
+
+message AuditoryBandConfig {
+  message SingleBand {
+    int64 start_freq = 1;
+    int64 stop_freq = 2;
+    int64 critical_ratio = 3;
+  }
+  repeated SingleBand auditory_bands = 1;
+  int64 filter_order = 2;
+}
+
+message MaskingConfig {
+  AuditoryBandConfig auditory_band_config = 1;
+  int64 window_duration_ms = 2;
+  int64 window_step_ms = 3;
+}
