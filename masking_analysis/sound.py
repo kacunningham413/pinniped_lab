@@ -175,7 +175,7 @@ class Sound:
   # TODO(kane): Add support for plot configuration
   def plot_spectrogram(self, **kwargs):
     f, t, Sxx = self.compute_spectrogram(**kwargs)
-    plt.pcolormesh(t, f, Sxx)
+    plt.pcolormesh(t, f, Sxx, shading='auto')
     plt.ylabel('Frequency [Hz]')
     plt.xlabel('Time [sec]')
     plt.ylim(0, self._sampling_freq / 2)
@@ -212,8 +212,9 @@ class MaskingAnalyzer:
     for band in self.masking_config.auditory_band_config.auditory_bands:
       band_signal_spls, _ = signal_spls[(band.start_freq, band.stop_freq)]
       band_noise_spls, _ = noise_spls[(band.start_freq, band.stop_freq)]
+      bandwidth = band.stop_freq - band.start_freq
       excesses = (np.array(band_signal_spls) - np.array(
-        band_noise_spls)) - band.critical_ratio
+        band_noise_spls)) - 10*np.log10(bandwidth) - band.critical_ratio
       signal_excesses[(band.start_freq, band.stop_freq)] = excesses
     return signal_excesses
 
