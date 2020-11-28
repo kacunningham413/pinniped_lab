@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package sound;
+
+message SoundGenConfig {
+  int64 fs = 1;  // sampling frequency (Hz)
+  int64 duration = 2;  // (sec)
+
+  oneof type {
+    PureToneConfig pure_tone_config = 3;
+    FlatSpectrumNoise flat_spectrum_noise_config = 4;
+  }
+}
+
+message PureToneConfig {
+  int64 center_freq = 1;
+}
+
+message FlatSpectrumNoise {
+  int64 filter_order = 3;  // Order of butterworth filter used to bandpass noise
+  int64 start_freq = 1;
+  int64 stop_freq = 2;
+}
+
