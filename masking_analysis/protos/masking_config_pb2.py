@@ -19,35 +19,35 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='sound',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x14masking_config.proto\x12\x05sound\"\xb5\x01\n\x12\x41uditoryBandConfig\x12<\n\x0e\x61uditory_bands\x18\x01 \x03(\x0b\x32$.sound.AuditoryBandConfig.SingleBand\x12\x14\n\x0c\x66ilter_order\x18\x02 \x01(\x03\x1aK\n\nSingleBand\x12\x12\n\nstart_freq\x18\x01 \x01(\x03\x12\x11\n\tstop_freq\x18\x02 \x01(\x03\x12\x16\n\x0e\x63ritical_ratio\x18\x03 \x01(\x03\"|\n\rMaskingConfig\x12\x37\n\x14\x61uditory_band_config\x18\x01 \x01(\x0b\x32\x19.sound.AuditoryBandConfig\x12\x1a\n\x12window_duration_ms\x18\x02 \x01(\x03\x12\x16\n\x0ewindow_step_ms\x18\x03 \x01(\x03\x62\x06proto3')
+  serialized_pb=_b('\n\x14masking_config.proto\x12\x05sound\"K\n\nSingleBand\x12\x12\n\nstart_freq\x18\x01 \x01(\x03\x12\x11\n\tstop_freq\x18\x02 \x01(\x03\x12\x16\n\x0e\x63ritical_ratio\x18\x03 \x01(\x03\"U\n\x12\x41uditoryBandConfig\x12)\n\x0e\x61uditory_bands\x18\x01 \x03(\x0b\x32\x11.sound.SingleBand\x12\x14\n\x0c\x66ilter_order\x18\x02 \x01(\x03\"|\n\rMaskingConfig\x12\x37\n\x14\x61uditory_band_config\x18\x01 \x01(\x0b\x32\x19.sound.AuditoryBandConfig\x12\x1a\n\x12window_duration_ms\x18\x02 \x01(\x03\x12\x16\n\x0ewindow_step_ms\x18\x03 \x01(\x03\x62\x06proto3')
 )
 
 
 
 
-_AUDITORYBANDCONFIG_SINGLEBAND = _descriptor.Descriptor(
+_SINGLEBAND = _descriptor.Descriptor(
   name='SingleBand',
-  full_name='sound.AuditoryBandConfig.SingleBand',
+  full_name='sound.SingleBand',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='start_freq', full_name='sound.AuditoryBandConfig.SingleBand.start_freq', index=0,
+      name='start_freq', full_name='sound.SingleBand.start_freq', index=0,
       number=1, type=3, cpp_type=2, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='stop_freq', full_name='sound.AuditoryBandConfig.SingleBand.stop_freq', index=1,
+      name='stop_freq', full_name='sound.SingleBand.stop_freq', index=1,
       number=2, type=3, cpp_type=2, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='critical_ratio', full_name='sound.AuditoryBandConfig.SingleBand.critical_ratio', index=2,
+      name='critical_ratio', full_name='sound.SingleBand.critical_ratio', index=2,
       number=3, type=3, cpp_type=2, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
@@ -65,9 +65,10 @@ _AUDITORYBANDCONFIG_SINGLEBAND = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=138,
-  serialized_end=213,
+  serialized_start=31,
+  serialized_end=106,
 )
+
 
 _AUDITORYBANDCONFIG = _descriptor.Descriptor(
   name='AuditoryBandConfig',
@@ -93,7 +94,7 @@ _AUDITORYBANDCONFIG = _descriptor.Descriptor(
   ],
   extensions=[
   ],
-  nested_types=[_AUDITORYBANDCONFIG_SINGLEBAND, ],
+  nested_types=[],
   enum_types=[
   ],
   serialized_options=None,
@@ -102,8 +103,8 @@ _AUDITORYBANDCONFIG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=32,
-  serialized_end=213,
+  serialized_start=108,
+  serialized_end=193,
 )
 
 
@@ -147,31 +148,30 @@ _MASKINGCONFIG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=215,
-  serialized_end=339,
+  serialized_start=195,
+  serialized_end=319,
 )
 
-_AUDITORYBANDCONFIG_SINGLEBAND.containing_type = _AUDITORYBANDCONFIG
-_AUDITORYBANDCONFIG.fields_by_name['auditory_bands'].message_type = _AUDITORYBANDCONFIG_SINGLEBAND
+_AUDITORYBANDCONFIG.fields_by_name['auditory_bands'].message_type = _SINGLEBAND
 _MASKINGCONFIG.fields_by_name['auditory_band_config'].message_type = _AUDITORYBANDCONFIG
+DESCRIPTOR.message_types_by_name['SingleBand'] = _SINGLEBAND
 DESCRIPTOR.message_types_by_name['AuditoryBandConfig'] = _AUDITORYBANDCONFIG
 DESCRIPTOR.message_types_by_name['MaskingConfig'] = _MASKINGCONFIG
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
-AuditoryBandConfig = _reflection.GeneratedProtocolMessageType('AuditoryBandConfig', (_message.Message,), dict(
+SingleBand = _reflection.GeneratedProtocolMessageType('SingleBand', (_message.Message,), dict(
+  DESCRIPTOR = _SINGLEBAND,
+  __module__ = 'masking_config_pb2'
+  # @@protoc_insertion_point(class_scope:sound.SingleBand)
+  ))
+_sym_db.RegisterMessage(SingleBand)
 
-  SingleBand = _reflection.GeneratedProtocolMessageType('SingleBand', (_message.Message,), dict(
-    DESCRIPTOR = _AUDITORYBANDCONFIG_SINGLEBAND,
-    __module__ = 'masking_config_pb2'
-    # @@protoc_insertion_point(class_scope:sound.AuditoryBandConfig.SingleBand)
-    ))
-  ,
+AuditoryBandConfig = _reflection.GeneratedProtocolMessageType('AuditoryBandConfig', (_message.Message,), dict(
   DESCRIPTOR = _AUDITORYBANDCONFIG,
   __module__ = 'masking_config_pb2'
   # @@protoc_insertion_point(class_scope:sound.AuditoryBandConfig)
   ))
 _sym_db.RegisterMessage(AuditoryBandConfig)
-_sym_db.RegisterMessage(AuditoryBandConfig.SingleBand)
 
 MaskingConfig = _reflection.GeneratedProtocolMessageType('MaskingConfig', (_message.Message,), dict(
   DESCRIPTOR = _MASKINGCONFIG,

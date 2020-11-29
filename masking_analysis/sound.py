@@ -1,12 +1,15 @@
+from __future__ import annotations
+
 from google.protobuf import text_format
 import matplotlib.pyplot as plt
 import numpy as np
 import wave
 
 from scipy import signal as sig
-from masking_analysis.protos import sound_pb2, sound_generation_pb2, masking_config_pb2
+from masking_analysis.protos import sound_pb2, sound_generation_pb2, \
+  masking_config_pb2
 import sys
-from typing import Mapping, Text, Tuple, Sequence, Dict, Any
+from typing import NamedTuple, Mapping, Text, Tuple, Sequence, Dict, Any
 
 
 def read_wav_file(file: Text) -> Tuple[int, np.ndarray]:
@@ -67,7 +70,8 @@ def gen_pure_tone_time_series(sound_gen_config):
   return np.sin(2 * np.pi * sound_gen_config.pure_tone_config.center_freq * x)
 
 
-def _filter_band(time_series, fs, start_freq, stop_freq, filter_order, window=None):
+def _filter_band(time_series, fs, start_freq, stop_freq, filter_order,
+                 window=None):
   if window is not None:
     time_series = time_series * window
   nyquist_freq = fs / 2
@@ -85,6 +89,27 @@ def gen_flat_spectrum_time_series(sound_gen_config):
                       sound_gen_config.flat_spectrum_noise_config.start_freq,
                       sound_gen_config.flat_spectrum_noise_config.stop_freq,
                       sound_gen_config.flat_spectrum_noise_config.filter_order)
+
+
+class FreqBand:
+  def __init__(self, band: masking_config_pb2.SingleBand):
+    self.start_freq = band.start_freq
+    self.stop_freq = band.stop_freq
+
+  @classmethod
+  def from_limits(cls, start_freq: int, stop_freq: int):
+    band = masking_config_pb2.SingleBand()
+    band.start_freq = start_freq
+    band.stop_freq = stop_freq
+    return FreqBand(band)
+
+  def __hash__(self):
+    return hash((self.start_freq, self.stop_freq))
+
+  def __eq__(self, other: FreqBand):
+    if type(other) is type(self):
+      return (self.start_freq == other.start_freq) and (
+          self.stop_freq == other.stop_freq)
 
 
 class Sound:
@@ -134,43 +159,44 @@ class Sound:
         (start, min([start + samples_per_window, len(self._time_series)])))
     return bounds
 
-  def _get_band_filtered_ts(self, start_freq: int, stop_freq: int,
-                            filter_order: int, window: np.array(int)) -> Sequence[int]:
-    return _filter_band(self._time_series, self._sampling_freq, start_freq,
-                        stop_freq, filter_order, window)
+  def _get_band_filtered_sound(self, start_freq: int,
+                               stop_freq: int,
+                               filter_order: int,
+                               window: np.array(int)) -> Sound:
+    ts = _filter_band(self._time_series, self._sampling_freq, start_freq,
+                      stop_freq, filter_order, window)
+    return Sound(ts, self._sampling_freq)
 
-  def _decompose_to_freq_bands(self,
-                               auditory_band_config: masking_config_pb2.AuditoryBandConfig) -> \
-  Mapping[
-    Tuple[int, int], Sequence[int]]:
-    signals = {}
+  def _decompose_to_freq_bands(
+      self, auditory_band_config: masking_config_pb2.AuditoryBandConfig) -> \
+      Mapping[FreqBand, Sound]:
+    sounds: Mapping[FreqBand, Sound] = {}
     for band in auditory_band_config.auditory_bands:
       assert (band.start_freq < band.stop_freq)
       assert (band.stop_freq <= self._sampling_freq / 2)
-      signals[(band.start_freq, band.stop_freq)] = self._get_band_filtered_ts(
+      sounds[FreqBand(band)] = self._get_band_filtered_sound(
         band.start_freq, band.stop_freq, auditory_band_config.filter_order,
         sig.tukey(len(self._time_series), alpha=0.1))
-    return signals
+    return sounds
 
   # TODO(kane): This currently assumes underwater (ref 1uPa)
-  def _get_windowed_spl(self, signal: Sequence[int], win_duration_ms: int,
-                        step_ms: int):
+  def _get_windowed_spl(self, win_duration_ms: int, step_ms: int):
     bounds = self._get_sliding_window_bounds(win_duration_ms, step_ms)
     spls = []
     for start, stop in bounds:
-      segment = signal[start:stop]
+      segment = self._time_series[start:stop]
       rms = np.sqrt(np.mean(segment ** 2))
       spls.append(20 * np.log10(rms))
     return spls, bounds
 
-  def get_windowed_spl_by_bands(self,
-                                auditory_band_config: masking_config_pb2.AuditoryBandConfig,
-                                win_duration_ms: int, step_ms: int):
-    signals = self._decompose_to_freq_bands(auditory_band_config)
-    spls = {}
-    for band, signal in signals.items():
-      spls[band] = self._get_windowed_spl(signal, win_duration_ms, step_ms)
-    return spls, signals
+  def get_windowed_spl_by_bands(
+      self, auditory_band_config: masking_config_pb2.AuditoryBandConfig,
+      win_duration_ms: int, step_ms: int) -> Mapping[FreqBand, Sequence[int]]:
+    sounds = self._decompose_to_freq_bands(auditory_band_config)
+    spls: Mapping[FreqBand, Sequence[int]] = {}
+    for band, sound in sounds.items():
+      spls[band] = sound._get_windowed_spl(win_duration_ms, step_ms)
+    return spls
 
   # TODO(kane): Add support for plot configuration
   def plot_spectrogram(self, **kwargs):
@@ -197,24 +223,23 @@ class MaskingAnalyzer:
     self.masking_config = masking_config
 
   def get_signal_excess(self):
-    signal_spls, _ = self.signal.get_windowed_spl_by_bands(
+    signal_spls = self.signal.get_windowed_spl_by_bands(
       self.masking_config.auditory_band_config,
       self.masking_config.window_duration_ms,
       self.masking_config.window_step_ms
     )
-    noise_spls, _ = self.noise.get_windowed_spl_by_bands(
+    noise_spls = self.noise.get_windowed_spl_by_bands(
       self.masking_config.auditory_band_config,
       self.masking_config.window_duration_ms,
       self.masking_config.window_step_ms
     )
-    assert(signal_spls.keys() == noise_spls.keys())
-    signal_excesses: Dict[Tuple[Any, Any], Any] = {}
+    assert (signal_spls.keys() == noise_spls.keys())
+    signal_excesses: Mapping[FreqBand, np.ndarray] = {}
     for band in self.masking_config.auditory_band_config.auditory_bands:
-      band_signal_spls, _ = signal_spls[(band.start_freq, band.stop_freq)]
-      band_noise_spls, _ = noise_spls[(band.start_freq, band.stop_freq)]
+      band_signal_spls, _ = signal_spls[FreqBand(band)]
+      band_noise_spls, _ = noise_spls[FreqBand(band)]
       bandwidth = band.stop_freq - band.start_freq
       excesses = (np.array(band_signal_spls) - np.array(
-        band_noise_spls)) - 10*np.log10(bandwidth) - band.critical_ratio
-      signal_excesses[(band.start_freq, band.stop_freq)] = excesses
+        band_noise_spls)) - 10 * np.log10(bandwidth) - band.critical_ratio
+      signal_excesses[FreqBand(band)] = excesses
     return signal_excesses
-
