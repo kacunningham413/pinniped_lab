@@ -1,7 +1,7 @@
 import os
 from masking_analysis.protos import sound_pb2, sound_generation_pb2, \
   masking_config_pb2
-from masking_analysis.sound import Sound, MaskingAnalyzer
+from masking_analysis.sound import Sound, MaskingAnalyzer, FreqBand
 import numpy as np
 import unittest
 
@@ -78,22 +78,21 @@ class SoundTest(unittest.TestCase):
     band_config.filter_order = 10
     win_duration_ms = 500
     step_ms = 500
-    spls, signals = sound.get_windowed_spl_by_bands(band_config,
-                                                    win_duration_ms, step_ms)
-    self.assertEqual(len(spls), len(signals))
-    self.assertEqual([(band.start_freq, band.stop_freq) for band in
-                      band_config.auditory_bands],
-                     [(start, stop) for start, stop in spls.keys()])
+    spls = sound.get_windowed_spl_by_bands(band_config,
+                                           win_duration_ms, step_ms)
+    self.assertEqual([FreqBand(band) for band in band_config.auditory_bands],
+                     list(spls.keys()))
     self.assertEqual(len(list(spls.values())[0][0]),
                      sound_gen_config.duration * 1000 / step_ms)
 
     # RMS of sin with amplitude 1 ~0.707, 20*log(.707) = -3.1 dB, slightly less
     # when we apply a Tukey window before band filtering. We exclude extrema to
     # account for the window
-    self.assertAlmostEqual(np.mean(spls[(900, 1100)][0][1:-1]), -3.0, 1)
+    self.assertAlmostEqual(
+      np.mean(spls[FreqBand.from_limits(900, 1100)][0][1:-1]), -3.0, 1)
     # Assert that SPL in bands not containing signal is less than -100 dB
-    self.assertLess(np.mean(spls[(100, 200)][0]), -100)
-    self.assertLess(np.mean(spls[(3000, 4000)][0]), -100)
+    self.assertLess(np.mean(spls[FreqBand.from_limits(100, 200)][0]), -100)
+    self.assertLess(np.mean(spls[FreqBand.from_limits(3000, 4000)][0]), -100)
 
   def test_masking_analyzer_signal_excess(self):
     signal_gen_config = sound_generation_pb2.SoundGenConfig()
@@ -122,8 +121,10 @@ class SoundTest(unittest.TestCase):
 
     analyzer = MaskingAnalyzer(signal, noise, masking_config)
     se = analyzer.get_signal_excess()
-    self.assertTrue(np.all((se[(400, 800)] - se[(100, 200)]) > 10))
-    self.assertTrue(np.all((se[(400, 800)] - se[(200, 400)]) > 10))
+    self.assertTrue(np.all((se[FreqBand.from_limits(400, 800)] - se[
+      FreqBand.from_limits(100, 200)]) > 10))
+    self.assertTrue(np.all((se[FreqBand.from_limits(400, 800)] - se[
+      FreqBand.from_limits(200, 400)]) > 10))
 
   def test_compute_spectrogram(self):
     # TODO(kane): Test contents of spectrogram

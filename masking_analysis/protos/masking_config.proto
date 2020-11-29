@@ -2,12 +2,13 @@ syntax = "proto3";
 
 package sound;
 
-message AuditoryBandConfig {
-  message SingleBand {
+message SingleBand {
     int64 start_freq = 1;
     int64 stop_freq = 2;
     int64 critical_ratio = 3;
-  }
+}
+
+message AuditoryBandConfig {
   repeated SingleBand auditory_bands = 1;
   int64 filter_order = 2;
 }
