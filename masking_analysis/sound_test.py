@@ -1,5 +1,5 @@
 import os
-from masking_analysis.protos import sound_pb2, sound_generation_pb2, \
+from masking_analysis.protos import sound_generation_pb2, \
   masking_config_pb2
 from masking_analysis.sound import Sound, MaskingAnalyzer, FreqBand
 import numpy as np

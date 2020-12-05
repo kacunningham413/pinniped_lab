@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package sound;
+
+import "masking_analysis/protos/masking_config.proto";
+import "masking_analysis/protos/sound_generation.proto";
+
+message Experiment {
+  SoundGenConfig signal_gen_config = 1;
+  SoundGenConfig noise_gen_config = 2;
+  MaskingConfig masking_config = 3;
+}
