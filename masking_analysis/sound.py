@@ -6,10 +6,18 @@ import numpy as np
 import wave
 
 from scipy import signal as sig
-from masking_analysis.protos import sound_pb2, sound_generation_pb2, \
-  masking_config_pb2
+from masking_analysis.protos import sound_generation_pb2, \
+  masking_config_pb2, experiment_config_pb2
 import sys
-from typing import NamedTuple, Mapping, Text, Tuple, Sequence, Dict, Any
+from typing import Mapping, Text, Tuple, Sequence
+
+
+def masking_analyzer_from_exp_config_txt(path: str) -> MaskingAnalyzer:
+  """Generates a MaskingAnalzer objext from an experiment_config text proto."""
+  experiment = experiment_config_pb2.Experiment()
+  with open(path, 'r') as f:
+    text_format.Parse(f.read(), experiment)
+  return MaskingAnalyzer.from_experiment_config(experiment)
 
 
 def read_wav_file(file: Text) -> Tuple[int, np.ndarray]:
@@ -53,8 +61,8 @@ def read_wav_file(file: Text) -> Tuple[int, np.ndarray]:
   return framerate, array.reshape((nchannels, nframes_read), order='F')
 
 
-def force_wav_data_to_mono(wav_data: np.ndarray):
-  """ Converts two channel wav data to a single channel"""
+def force_wav_data_to_mono(wav_data: np.ndarray) -> np.ndarray:
+  """Converts two channel wav data to a single channel."""
   ndims = len(wav_data.shape)
   if ndims == 1:
     return wav_data
@@ -141,8 +149,9 @@ class Sound:
 
   @classmethod
   def sound_from_gen_config_path(cls, sound_gen_config_path):
+    sound_gen_config = sound_generation_pb2.SoundGenConfig()
     with open(sound_gen_config_path, 'r') as f:
-      sound_gen_config = text_format.Parse(f.read(), sound_generation_pb2)
+      text_format.Parse(f.read(), sound_generation_pb2)
     return Sound.sound_from_config(sound_gen_config)
 
   def compute_spectrogram(self, **kwargs):
@@ -221,6 +230,13 @@ class MaskingAnalyzer:
     self.signal = signal
     self.noise = noise
     self.masking_config = masking_config
+
+  @classmethod
+  def from_experiment_config(cls, experiment_config: experiment_config_pb2):
+    signal = Sound.sound_from_gen_config(experiment_config.signal_gen_config)
+    noise = Sound.sound_from_gen_config(experiment_config.noise_gen_config)
+    masking_config = experiment_config.masking_config
+    return MaskingAnalyzer(signal, noise, masking_config)
 
   def get_signal_excess(self):
     signal_spls = self.signal.get_windowed_spl_by_bands(
