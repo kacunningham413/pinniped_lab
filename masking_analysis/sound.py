@@ -72,14 +72,10 @@ def force_wav_data_to_mono(wav_data: np.ndarray) -> np.ndarray:
     raise ValueError("Wav file  is neither mono nor stereo")
 
 
-def gen_pure_tone_time_series(sound_gen_config):
-  x = np.arange(
-    sound_gen_config.duration * sound_gen_config.fs) / sound_gen_config.fs
-  return np.sin(2 * np.pi * sound_gen_config.pure_tone_config.center_freq * x)
-
-
-def _filter_band(time_series, fs, start_freq, stop_freq, filter_order,
-                 window=None):
+def _filter_band(time_series: Sequence[float], fs: int, start_freq: int,
+                 stop_freq: int, filter_order: int,
+                 window: Sequence[int] = None) -> Sequence[float]:
+  """Utility function for bandpass filtering a time series."""
   if window is not None:
     time_series = time_series * window
   nyquist_freq = fs / 2
@@ -90,7 +86,15 @@ def _filter_band(time_series, fs, start_freq, stop_freq, filter_order,
   return sig.sosfilt(sos, time_series)
 
 
-def gen_flat_spectrum_time_series(sound_gen_config):
+def gen_pure_tone_time_series(
+    sound_gen_config: sound_generation_pb2.SoundGenConfig) -> Sequence[float]:
+  x = np.arange(
+    sound_gen_config.duration * sound_gen_config.fs) / sound_gen_config.fs
+  return np.sin(2 * np.pi * sound_gen_config.pure_tone_config.center_freq * x)
+
+
+def gen_flat_spectrum_time_series(
+    sound_gen_config: sound_generation_pb2.SoundGenConfig) -> Sequence[float]:
   white_noise = [np.random.normal() for _ in
                  range(sound_gen_config.duration * sound_gen_config.fs)]
   return _filter_band(white_noise, sound_gen_config.fs,
@@ -100,6 +104,12 @@ def gen_flat_spectrum_time_series(sound_gen_config):
 
 
 class FreqBand:
+  """
+  Helper data class for frequency band definition.
+
+  FreqBand objects are practically identical to masking_config_pb2.SingleBand
+  derived object expect they are (1) hashable, and (2) have a defined equaltiy
+  operator."""
   def __init__(self, band: masking_config_pb2.SingleBand):
     self.start_freq = band.start_freq
     self.stop_freq = band.stop_freq
@@ -133,13 +143,14 @@ class Sound:
     return self._time_series
 
   @classmethod
-  def sound_from_wav(cls, wav_path):
+  def sound_from_wav(cls, wav_path: str) -> Sound:
     sampling_freq, wav_array = read_wav_file(wav_path)
     wav_array = force_wav_data_to_mono(wav_array)
     return Sound(wav_array, sampling_freq)
 
   @classmethod
-  def sound_from_gen_config(cls, sound_gen_config):
+  def sound_from_gen_config(
+      cls, sound_gen_config: sound_generation_pb2.SoundGenConfig) -> Sound:
     if sound_gen_config.HasField('pure_tone_config'):
       time_series = gen_pure_tone_time_series(sound_gen_config)
       return Sound(time_series, sound_gen_config.fs)
@@ -148,7 +159,7 @@ class Sound:
       return Sound(time_series, sound_gen_config.fs)
 
   @classmethod
-  def sound_from_gen_config_path(cls, sound_gen_config_path):
+  def sound_from_gen_config_path(cls, sound_gen_config_path: str) -> Sound:
     sound_gen_config = sound_generation_pb2.SoundGenConfig()
     with open(sound_gen_config_path, 'r') as f:
       text_format.Parse(f.read(), sound_generation_pb2)

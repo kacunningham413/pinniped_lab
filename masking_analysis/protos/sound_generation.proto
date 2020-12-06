@@ -7,12 +7,12 @@ message SoundGenConfig {
   int64 duration = 2;  // (sec)
 
   oneof type {
-    PureToneConfig pure_tone_config = 3;
+    PureTone pure_tone_config = 3;
     FlatSpectrumNoise flat_spectrum_noise_config = 4;
   }
 }
 
-message PureToneConfig {
+message PureTone {
   int64 center_freq = 1;
 }
 
