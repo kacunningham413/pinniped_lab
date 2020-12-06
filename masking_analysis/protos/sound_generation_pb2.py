@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='sound',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n.masking_analysis/protos/sound_generation.proto\x12\x05sound\"\xa9\x01\n\x0eSoundGenConfig\x12\n\n\x02\x66s\x18\x01 \x01(\x03\x12\x10\n\x08\x64uration\x18\x02 \x01(\x03\x12\x31\n\x10pure_tone_config\x18\x03 \x01(\x0b\x32\x15.sound.PureToneConfigH\x00\x12>\n\x1a\x66lat_spectrum_noise_config\x18\x04 \x01(\x0b\x32\x18.sound.FlatSpectrumNoiseH\x00\x42\x06\n\x04type\"%\n\x0ePureToneConfig\x12\x13\n\x0b\x63\x65nter_freq\x18\x01 \x01(\x03\"P\n\x11\x46latSpectrumNoise\x12\x14\n\x0c\x66ilter_order\x18\x03 \x01(\x03\x12\x12\n\nstart_freq\x18\x01 \x01(\x03\x12\x11\n\tstop_freq\x18\x02 \x01(\x03\x62\x06proto3')
+  serialized_pb=_b('\n.masking_analysis/protos/sound_generation.proto\x12\x05sound\"\xa3\x01\n\x0eSoundGenConfig\x12\n\n\x02\x66s\x18\x01 \x01(\x03\x12\x10\n\x08\x64uration\x18\x02 \x01(\x03\x12+\n\x10pure_tone_config\x18\x03 \x01(\x0b\x32\x0f.sound.PureToneH\x00\x12>\n\x1a\x66lat_spectrum_noise_config\x18\x04 \x01(\x0b\x32\x18.sound.FlatSpectrumNoiseH\x00\x42\x06\n\x04type\"\x1f\n\x08PureTone\x12\x13\n\x0b\x63\x65nter_freq\x18\x01 \x01(\x03\"P\n\x11\x46latSpectrumNoise\x12\x14\n\x0c\x66ilter_order\x18\x03 \x01(\x03\x12\x12\n\nstart_freq\x18\x01 \x01(\x03\x12\x11\n\tstop_freq\x18\x02 \x01(\x03\x62\x06proto3')
 )
 
 
@@ -76,19 +76,19 @@ _SOUNDGENCONFIG = _descriptor.Descriptor(
       index=0, containing_type=None, fields=[]),
   ],
   serialized_start=58,
-  serialized_end=227,
+  serialized_end=221,
 )
 
 
-_PURETONECONFIG = _descriptor.Descriptor(
-  name='PureToneConfig',
-  full_name='sound.PureToneConfig',
+_PURETONE = _descriptor.Descriptor(
+  name='PureTone',
+  full_name='sound.PureTone',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='center_freq', full_name='sound.PureToneConfig.center_freq', index=0,
+      name='center_freq', full_name='sound.PureTone.center_freq', index=0,
       number=1, type=3, cpp_type=2, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
@@ -106,8 +106,8 @@ _PURETONECONFIG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=229,
-  serialized_end=266,
+  serialized_start=223,
+  serialized_end=254,
 )
 
 
@@ -151,11 +151,11 @@ _FLATSPECTRUMNOISE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=268,
-  serialized_end=348,
+  serialized_start=256,
+  serialized_end=336,
 )
 
-_SOUNDGENCONFIG.fields_by_name['pure_tone_config'].message_type = _PURETONECONFIG
+_SOUNDGENCONFIG.fields_by_name['pure_tone_config'].message_type = _PURETONE
 _SOUNDGENCONFIG.fields_by_name['flat_spectrum_noise_config'].message_type = _FLATSPECTRUMNOISE
 _SOUNDGENCONFIG.oneofs_by_name['type'].fields.append(
   _SOUNDGENCONFIG.fields_by_name['pure_tone_config'])
@@ -164,7 +164,7 @@ _SOUNDGENCONFIG.oneofs_by_name['type'].fields.append(
   _SOUNDGENCONFIG.fields_by_name['flat_spectrum_noise_config'])
 _SOUNDGENCONFIG.fields_by_name['flat_spectrum_noise_config'].containing_oneof = _SOUNDGENCONFIG.oneofs_by_name['type']
 DESCRIPTOR.message_types_by_name['SoundGenConfig'] = _SOUNDGENCONFIG
-DESCRIPTOR.message_types_by_name['PureToneConfig'] = _PURETONECONFIG
+DESCRIPTOR.message_types_by_name['PureTone'] = _PURETONE
 DESCRIPTOR.message_types_by_name['FlatSpectrumNoise'] = _FLATSPECTRUMNOISE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -175,12 +175,12 @@ SoundGenConfig = _reflection.GeneratedProtocolMessageType('SoundGenConfig', (_me
   ))
 _sym_db.RegisterMessage(SoundGenConfig)
 
-PureToneConfig = _reflection.GeneratedProtocolMessageType('PureToneConfig', (_message.Message,), dict(
-  DESCRIPTOR = _PURETONECONFIG,
+PureTone = _reflection.GeneratedProtocolMessageType('PureTone', (_message.Message,), dict(
+  DESCRIPTOR = _PURETONE,
   __module__ = 'masking_analysis.protos.sound_generation_pb2'
-  # @@protoc_insertion_point(class_scope:sound.PureToneConfig)
+  # @@protoc_insertion_point(class_scope:sound.PureTone)
   ))
-_sym_db.RegisterMessage(PureToneConfig)
+_sym_db.RegisterMessage(PureTone)
 
 FlatSpectrumNoise = _reflection.GeneratedProtocolMessageType('FlatSpectrumNoise', (_message.Message,), dict(
   DESCRIPTOR = _FLATSPECTRUMNOISE,
