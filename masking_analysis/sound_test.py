@@ -82,17 +82,21 @@ class SoundTest(unittest.TestCase):
                                            win_duration_ms, step_ms)
     self.assertEqual([FreqBand(band) for band in band_config.auditory_bands],
                      list(spls.keys()))
-    self.assertEqual(len(list(spls.values())[0][0]),
+    self.assertEqual(len(list(spls.values())[0]),
                      sound_gen_config.duration * 1000 / step_ms)
 
     # RMS of sin with amplitude 1 ~0.707, 20*log(.707) = -3.1 dB, slightly less
     # when we apply a Tukey window before band filtering. We exclude extrema to
     # account for the window
     self.assertAlmostEqual(
-      np.mean(spls[FreqBand.from_limits(900, 1100)][0][1:-1]), -3.0, 1)
+      float(
+        np.mean(list(spls[FreqBand.from_limits(900, 1100)].values())[1:-1])),
+      -3.0, 1)
     # Assert that SPL in bands not containing signal is less than -100 dB
-    self.assertLess(np.mean(spls[FreqBand.from_limits(100, 200)][0]), -100)
-    self.assertLess(np.mean(spls[FreqBand.from_limits(3000, 4000)][0]), -100)
+    self.assertLess(
+      np.mean(list(spls[FreqBand.from_limits(100, 200)].values())), -100)
+    self.assertLess(
+      np.mean(list(spls[FreqBand.from_limits(3000, 4000)].values())), -100)
 
   def test_masking_analyzer_signal_excess(self):
     signal_gen_config = sound_generation_pb2.SoundGenConfig()

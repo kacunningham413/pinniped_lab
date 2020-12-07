@@ -9,7 +9,7 @@ from scipy import signal as sig
 from masking_analysis.protos import sound_generation_pb2, \
   masking_config_pb2, experiment_config_pb2
 import sys
-from typing import Mapping, Text, Tuple, Sequence
+from typing import Mapping, MutableMapping, Text, Tuple, Sequence
 
 
 def masking_analyzer_from_exp_config_txt(path: str) -> MaskingAnalyzer:
@@ -130,6 +130,23 @@ class FreqBand:
           self.stop_freq == other.stop_freq)
 
 
+class TimeSlice:
+  """
+  Helper data class for a time window band.
+
+  Hashable and comparable for equality."""
+  def __init__(self, start: int, stop: int):
+    self.start = start
+    self.stop = stop
+
+  def __hash__(self):
+    return hash((self.start, self.stop))
+
+  def __eq__(self, other: TimeSlice):
+    if type(other) is type(self):
+      return (self.start == other.start) and (self.stop == other.stop)
+
+
 class Sound:
   _time_series: np.ndarray
 
@@ -163,34 +180,34 @@ class Sound:
     sound_gen_config = sound_generation_pb2.SoundGenConfig()
     with open(sound_gen_config_path, 'r') as f:
       text_format.Parse(f.read(), sound_generation_pb2)
-    return Sound.sound_from_config(sound_gen_config)
+    return Sound.sound_from_gen_config(sound_gen_config)
 
   def compute_spectrogram(self, **kwargs):
     return sig.spectrogram(self._time_series, self._sampling_freq, **kwargs)
 
   def _get_sliding_window_bounds(self,
                                  win_duration_ms: int,
-                                 step_ms: int) -> Sequence[Tuple[int, int]]:
+                                 step_ms: int) -> Sequence[TimeSlice]:
     bounds = []
     samples_per_window = int(self._sampling_freq * (win_duration_ms / 1000))
     samples_per_step = int(self._sampling_freq * (step_ms / 1000))
     for start in range(0, len(self._time_series), samples_per_step):
-      bounds.append(
-        (start, min([start + samples_per_window, len(self._time_series)])))
+      bounds.append(TimeSlice(
+        start, min([start + samples_per_window, len(self._time_series)])))
     return bounds
 
   def _get_band_filtered_sound(self, start_freq: int,
                                stop_freq: int,
                                filter_order: int,
-                               window: np.array(int)) -> Sound:
+                               window: np.array(float)) -> Sound:
     ts = _filter_band(self._time_series, self._sampling_freq, start_freq,
                       stop_freq, filter_order, window)
     return Sound(ts, self._sampling_freq)
 
   def _decompose_to_freq_bands(
       self, auditory_band_config: masking_config_pb2.AuditoryBandConfig) -> \
-      Mapping[FreqBand, Sound]:
-    sounds: Mapping[FreqBand, Sound] = {}
+      MutableMapping[FreqBand, Sound]:
+    sounds: MutableMapping[FreqBand, Sound] = {}
     for band in auditory_band_config.auditory_bands:
       assert (band.start_freq < band.stop_freq)
       assert (band.stop_freq <= self._sampling_freq / 2)
@@ -200,20 +217,22 @@ class Sound:
     return sounds
 
   # TODO(kane): This currently assumes underwater (ref 1uPa)
-  def _get_windowed_spl(self, win_duration_ms: int, step_ms: int):
-    bounds = self._get_sliding_window_bounds(win_duration_ms, step_ms)
-    spls = []
-    for start, stop in bounds:
-      segment = self._time_series[start:stop]
+  def _get_windowed_spl(self, win_duration_ms: int,
+                        step_ms: int) -> MutableMapping[TimeSlice, int]:
+    slices = self._get_sliding_window_bounds(win_duration_ms, step_ms)
+    spls: MutableMapping[TimeSlice, int] = {}
+    for time_slice in slices:
+      segment = self._time_series[time_slice.start:time_slice.stop]
       rms = np.sqrt(np.mean(segment ** 2))
-      spls.append(20 * np.log10(rms))
-    return spls, bounds
+      spls[time_slice] = 20 * np.log10(rms)
+    return spls
 
   def get_windowed_spl_by_bands(
       self, auditory_band_config: masking_config_pb2.AuditoryBandConfig,
-      win_duration_ms: int, step_ms: int) -> Mapping[FreqBand, Sequence[int]]:
+      win_duration_ms: int,
+      step_ms: int) -> MutableMapping[FreqBand, MutableMapping[TimeSlice, int]]:
     sounds = self._decompose_to_freq_bands(auditory_band_config)
-    spls: Mapping[FreqBand, Sequence[int]] = {}
+    spls: MutableMapping[FreqBand, MutableMapping[TimeSlice, int]] = {}
     for band, sound in sounds.items():
       spls[band] = sound._get_windowed_spl(win_duration_ms, step_ms)
     return spls
@@ -261,10 +280,10 @@ class MaskingAnalyzer:
       self.masking_config.window_step_ms
     )
     assert (signal_spls.keys() == noise_spls.keys())
-    signal_excesses: Mapping[FreqBand, np.ndarray] = {}
+    signal_excesses: MutableMapping[FreqBand, np.ndarray] = {}
     for band in self.masking_config.auditory_band_config.auditory_bands:
-      band_signal_spls, _ = signal_spls[FreqBand(band)]
-      band_noise_spls, _ = noise_spls[FreqBand(band)]
+      band_signal_spls = list(signal_spls[FreqBand(band)].values())
+      band_noise_spls = list(noise_spls[FreqBand(band)].values())
       bandwidth = band.stop_freq - band.start_freq
       excesses = (np.array(band_signal_spls) - np.array(
         band_noise_spls)) - 10 * np.log10(bandwidth) - band.critical_ratio
