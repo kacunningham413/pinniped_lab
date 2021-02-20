@@ -103,6 +103,14 @@ def gen_flat_spectrum_time_series(
                       sound_gen_config.flat_spectrum_noise_config.filter_order)
 
 
+def add_sounds(s1: Sound, s2: Sound):
+  # For 1st version, restrict to already aligned sounds
+  # TODO(kane): Automatically align misaligned time series.
+  assert(s1.times == s2.times)
+  summed_time_series = s1.time_series + s2.time_series
+  return Sound(summed_time_series, s1.sampling_freq)
+
+
 class FreqBand:
   """
   Helper data class for frequency band definition.
@@ -158,6 +166,14 @@ class Sound:
   @property
   def time_series(self):
     return self._time_series
+
+  @property
+  def times(self):
+    return self._times
+
+  @property
+  def sampling_freq(self):
+    return self._sampling_freq
 
   @classmethod
   def sound_from_wav(cls, wav_path: str) -> Sound:
@@ -289,3 +305,7 @@ class MaskingAnalyzer:
         band_noise_spls)) - 10 * np.log10(bandwidth) - band.critical_ratio
       signal_excesses[FreqBand(band)] = excesses
     return signal_excesses
+
+  def plot_signal_and_noise_spectrogram(self):
+    summed = add_sounds(self.signal, self.noise)
+    summed.plot_spectrogram()
