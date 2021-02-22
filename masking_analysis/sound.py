@@ -9,7 +9,7 @@ from scipy import signal as sig
 from masking_analysis.protos import sound_generation_pb2, \
   masking_config_pb2, experiment_config_pb2
 import sys
-from typing import Mapping, MutableMapping, Text, Tuple, Sequence
+from typing import MutableMapping, Text, Tuple, Sequence
 
 
 def masking_analyzer_from_exp_config_txt(path: str) -> MaskingAnalyzer:
@@ -93,6 +93,23 @@ def gen_pure_tone_time_series(
   return np.sin(2 * np.pi * sound_gen_config.pure_tone_config.center_freq * x)
 
 
+def gen_chirp_time_series(
+    sound_gen_config: sound_generation_pb2.SoundGenConfig) -> Sequence[float]:
+  x = np.linspace(0, sound_gen_config.duration,
+                  sound_gen_config.duration * sound_gen_config.fs)
+  sweep_methods = {
+    sound_gen_config.chirp_config.LINEAR: 'linear',
+    sound_gen_config.chirp_config.QUADRATIC: 'quadratic',
+    sound_gen_config.chirp_config.LOGARITHMIC: 'logarithmic',
+    sound_gen_config.chirp_config.HYPERBOLIC: 'hyperbolic',
+  }
+  ts = sig.chirp(x, sound_gen_config.chirp_config.start_freq,
+                 sound_gen_config.duration,
+                 sound_gen_config.chirp_config.start_freq,
+                 method=sweep_methods[sound_gen_config.chirp_config.LINEAR])
+  return ts
+
+
 def gen_flat_spectrum_time_series(
     sound_gen_config: sound_generation_pb2.SoundGenConfig) -> Sequence[float]:
   white_noise = [np.random.normal() for _ in
@@ -106,7 +123,7 @@ def gen_flat_spectrum_time_series(
 def add_sounds(s1: Sound, s2: Sound):
   # For 1st version, restrict to already aligned sounds
   # TODO(kane): Automatically align misaligned time series.
-  assert(s1.times == s2.times)
+  assert (s1.times == s2.times)
   summed_time_series = s1.time_series + s2.time_series
   return Sound(summed_time_series, s1.sampling_freq)
 
@@ -118,6 +135,7 @@ class FreqBand:
   FreqBand objects are practically identical to masking_config_pb2.SingleBand
   derived object expect they are (1) hashable, and (2) have a defined equaltiy
   operator."""
+
   def __init__(self, band: masking_config_pb2.SingleBand):
     self.start_freq = band.start_freq
     self.stop_freq = band.stop_freq
@@ -143,6 +161,7 @@ class TimeSlice:
   Helper data class for a time window band.
 
   Hashable and comparable for equality."""
+
   def __init__(self, start: int, stop: int):
     self.start = start
     self.stop = stop
@@ -190,6 +209,11 @@ class Sound:
     elif sound_gen_config.HasField('flat_spectrum_noise_config'):
       time_series = gen_flat_spectrum_time_series(sound_gen_config)
       return Sound(time_series, sound_gen_config.fs)
+    elif sound_gen_config.HasField('chirp_config'):
+      time_series = gen_chirp_time_series(sound_gen_config)
+      return Sound(time_series, sound_gen_config.fs)
+    else:
+      raise ValueError("Unrecognized Sound Generation Config type.")
 
   @classmethod
   def sound_from_gen_config_path(cls, sound_gen_config_path: str) -> Sound:
