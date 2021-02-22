@@ -39,6 +39,31 @@ class SoundTest(unittest.TestCase):
     self.assertAlmostEqual(sound._time_series[int(sound_gen_config.fs / (
         sound_gen_config.pure_tone_config.center_freq * (4 / 3)))], -1, 5)
 
+  def test_chirp_from_gen_config(self):
+    sound_gen_config = sound_generation_pb2.SoundGenConfig()
+    sound_gen_config.fs = 10000
+    sound_gen_config.duration = 1
+    sound_gen_config.chirp_config.start_freq = 100
+    sound_gen_config.chirp_config.stop_freq = 1000
+    sound_gen_config.chirp_config.sweep_method = 0
+    sound = Sound.sound_from_gen_config(sound_gen_config)
+    self.assertEqual(len(sound._time_series),
+                     sound_gen_config.fs * sound_gen_config.duration)
+    f, t, Sxx = sound.compute_spectrogram(nperseg=sound.time_series.size)
+    # In the first half of the signal, roughly half the total energy should be
+    # in frequency range less than half the center freq of the chirp. Roughly
+    # zero energy should be above half the scenter frequency of the chirp.
+    sum_in_lower_freq = 0
+    sum_in_upper_freq = 0
+    print(f[:int(len(f) / 2)])
+    for f, Sx in zip(f[:int(len(f) / 2)], Sxx[:, int(len(t) / 2)]):
+      if f <= sound_gen_config.chirp_config.stop_freq / 2:
+        sum_in_lower_freq += Sx
+      else:
+        sum_in_upper_freq += Sx
+    self.assertAlmostEqual(sum_in_lower_freq, 0.5, 2)
+    self.assertAlmostEqual(sum_in_upper_freq, 0.0, 2)
+
   def test_flat_spectrum_noise_from_gen_config(self):
     sound_gen_config = sound_generation_pb2.SoundGenConfig()
     sound_gen_config.fs = 2000
