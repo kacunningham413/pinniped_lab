@@ -39,6 +39,10 @@ class MaskingTest(unittest.TestCase):
     self.assertTrue(np.all((se[FreqBand.from_limits(400, 800)] - se[
       FreqBand.from_limits(200, 400)]) > 10))
 
+  def test_masking_analyzer_from_config(self):
+    analyzer = masking_analyzer_from_exp_config_txt(
+      './test_data/experiment_config_example.textproto')
+
 
 if __name__ == '__main__':
   unittest.main()

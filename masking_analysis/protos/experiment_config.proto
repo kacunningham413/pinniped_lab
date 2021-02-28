@@ -9,4 +9,9 @@ message Experiment {
   SoundGenConfig signal_gen_config = 1;
   SoundGenConfig noise_gen_config = 2;
   MaskingConfig masking_config = 3;
+
+  // signal_position should be between 0 and 1 and represent the relative
+  // position of the signal within the noise. The default value "0" means the
+  // signal and noise start at the same time.
+  float signal_position = 4;
 }

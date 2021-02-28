@@ -21,7 +21,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='sound',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n/masking_analysis/protos/experiment_config.proto\x12\x05sound\x1a,masking_analysis/protos/masking_config.proto\x1a.masking_analysis/protos/sound_generation.proto\"\x9d\x01\n\nExperiment\x12\x30\n\x11signal_gen_config\x18\x01 \x01(\x0b\x32\x15.sound.SoundGenConfig\x12/\n\x10noise_gen_config\x18\x02 \x01(\x0b\x32\x15.sound.SoundGenConfig\x12,\n\x0emasking_config\x18\x03 \x01(\x0b\x32\x14.sound.MaskingConfigb\x06proto3')
+  serialized_pb=_b('\n/masking_analysis/protos/experiment_config.proto\x12\x05sound\x1a,masking_analysis/protos/masking_config.proto\x1a.masking_analysis/protos/sound_generation.proto\"\xb6\x01\n\nExperiment\x12\x30\n\x11signal_gen_config\x18\x01 \x01(\x0b\x32\x15.sound.SoundGenConfig\x12/\n\x10noise_gen_config\x18\x02 \x01(\x0b\x32\x15.sound.SoundGenConfig\x12,\n\x0emasking_config\x18\x03 \x01(\x0b\x32\x14.sound.MaskingConfig\x12\x17\n\x0fsignal_position\x18\x04 \x01(\x02\x62\x06proto3')
   ,
   dependencies=[masking__analysis_dot_protos_dot_masking__config__pb2.DESCRIPTOR,masking__analysis_dot_protos_dot_sound__generation__pb2.DESCRIPTOR,])
 
@@ -56,6 +56,13 @@ _EXPERIMENT = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='signal_position', full_name='sound.Experiment.signal_position', index=3,
+      number=4, type=2, cpp_type=6, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -69,7 +76,7 @@ _EXPERIMENT = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=153,
-  serialized_end=310,
+  serialized_end=335,
 )
 
 _EXPERIMENT.fields_by_name['signal_gen_config'].message_type = masking__analysis_dot_protos_dot_sound__generation__pb2._SOUNDGENCONFIG

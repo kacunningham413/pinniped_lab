@@ -96,8 +96,9 @@ def gen_chirp_time_series(
   }
   ts = sig.chirp(x, sound_gen_config.chirp_config.start_freq,
                  sound_gen_config.duration,
-                 sound_gen_config.chirp_config.start_freq,
-                 method=sweep_methods[sound_gen_config.chirp_config.LINEAR])
+                 sound_gen_config.chirp_config.stop_freq,
+                 method=sweep_methods[
+                   sound_gen_config.chirp_config.sweep_method])
   return ts
 
 
