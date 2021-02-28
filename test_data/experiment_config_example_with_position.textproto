@@ -1,8 +1,10 @@
 signal_gen_config {
     fs: 5000
-    duration: 3
-    pure_tone_config {
-      center_freq: 500
+    duration: 1
+    chirp_config {
+      start_freq: 200
+      stop_freq: 1200
+      sweep_method: 2
     }
 }
 noise_gen_config {
@@ -10,7 +12,7 @@ noise_gen_config {
     duration: 3
     flat_spectrum_noise_config {
       start_freq: 50
-      stop_freq: 1000
+      stop_freq: 800
       filter_order: 10
     }
 }
@@ -31,8 +33,14 @@ masking_config {
         stop_freq: 1000
         critical_ratio: 8
       }
+      auditory_bands {
+        start_freq: 1000
+        stop_freq: 1500
+        critical_ratio: 8
+      }
       filter_order: 10
     }
     window_duration_ms: 1000
-    window_step_ms: 500
+    window_step_ms: 100
 }
+signal_position: 0.3333

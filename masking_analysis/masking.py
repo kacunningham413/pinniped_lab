@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from google.protobuf import text_format
+import logging
 import numpy as np
 
 from .sound import Sound, FreqBand
@@ -25,6 +26,22 @@ def add_sounds(s1: Sound, s2: Sound):
   return Sound(summed_time_series, s1.sampling_freq)
 
 
+def get_padded_signal(signal: Sound, noise: Sound,
+                      signal_position: float) -> Sound:
+  signal_len = len(signal.time_series)
+  noise_len = len(noise.time_series)
+  left_pad_size = int(noise_len * signal_position)
+  if (left_pad_size + signal_len) > noise_len:
+    logging.warning("Signal extends beyond noise and will be truncated.")
+    padded_signal = np.concatenate([np.zeros(left_pad_size), signal.time_series[
+                                              :noise_len - left_pad_size]])
+  else:
+    right_pad_size = noise_len - left_pad_size - signal_len
+    padded_signal = np.concatenate([np.zeros(left_pad_size), signal.time_series, np.zeros(
+      right_pad_size)])
+  return Sound(padded_signal, signal.sampling_freq)
+
+
 class MaskingAnalyzer:
   def __init__(self, signal: Sound, noise: Sound,
                masking_config: masking_config_pb2):
@@ -37,6 +54,9 @@ class MaskingAnalyzer:
     signal = Sound.sound_from_gen_config(experiment_config.signal_gen_config)
     noise = Sound.sound_from_gen_config(experiment_config.noise_gen_config)
     masking_config = experiment_config.masking_config
+    if signal.sampling_freq != noise.sampling_freq:
+      raise ValueError("Signal and Noise must have equal sampling frequencies.")
+    signal = get_padded_signal(signal, noise, experiment_config.signal_position)
     return MaskingAnalyzer(signal, noise, masking_config)
 
   def get_signal_excess(self):
