@@ -1,7 +1,7 @@
 from masking_analysis.protos import sound_generation_pb2, \
   masking_config_pb2
 from masking_analysis.sound import Sound, FreqBand
-from masking_analysis.masking import MaskingAnalyzer
+from masking_analysis.masking import MaskingAnalyzer, masking_analyzer_from_exp_config_txt
 import numpy as np
 import unittest
 

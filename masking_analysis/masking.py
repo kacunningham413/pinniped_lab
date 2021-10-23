@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from google.protobuf import text_format
 import logging
+import matplotlib.pyplot as plt
 import numpy as np
 
 from .sound import Sound, FreqBand
@@ -34,11 +35,12 @@ def get_padded_signal(signal: Sound, noise: Sound,
   if (left_pad_size + signal_len) > noise_len:
     logging.warning("Signal extends beyond noise and will be truncated.")
     padded_signal = np.concatenate([np.zeros(left_pad_size), signal.time_series[
-                                              :noise_len - left_pad_size]])
+                                                             :noise_len - left_pad_size]])
   else:
     right_pad_size = noise_len - left_pad_size - signal_len
-    padded_signal = np.concatenate([np.zeros(left_pad_size), signal.time_series, np.zeros(
-      right_pad_size)])
+    padded_signal = np.concatenate(
+      [np.zeros(left_pad_size), signal.time_series, np.zeros(
+        right_pad_size)])
   return Sound(padded_signal, signal.sampling_freq)
 
 
@@ -76,11 +78,26 @@ class MaskingAnalyzer:
       band_signal_spls = list(signal_spls[FreqBand(band)].values())
       band_noise_spls = list(noise_spls[FreqBand(band)].values())
       bandwidth = band.stop_freq - band.start_freq
-      excesses = (np.array(band_signal_spls) - np.array(
-        band_noise_spls)) - 10 * np.log10(bandwidth) - band.critical_ratio
+      excesses = np.array(band_signal_spls) - (np.array(
+        band_noise_spls) - 10 * np.log10(bandwidth)) - band.critical_ratio
       signal_excesses[FreqBand(band)] = excesses
     return signal_excesses
+
+  def get_signal_excess_times(self):
+    times = [x for x in
+             range(0, int(self.noise.duration_ms),
+                   self.masking_config.window_step_ms)]
+    # Offset times to center of sliding window
+    times = [x + self.masking_config.window_duration_ms/2 for x in times]
+    return times
 
   def plot_signal_and_noise_spectrogram(self):
     summed = add_sounds(self.signal, self.noise)
     summed.plot_spectrogram()
+
+  def plot_signal_excesses(self):
+    se = self.get_signal_excess()
+    se_t = self.get_signal_excess_times()
+    for band, excess in se.items():
+      plt.plot(se_t, excess, label=f'{band.start_freq}-{band.stop_freq}Hz')
+    plt.legend(loc='upper right')

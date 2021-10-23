@@ -1,9 +1,9 @@
 signal_gen_config {
     fs: 5000
-    duration: 1
+    duration: 2
     chirp_config {
       start_freq: 200
-      stop_freq: 1200
+      stop_freq: 1600
       sweep_method: 2
     }
 }
@@ -40,7 +40,7 @@ masking_config {
       }
       filter_order: 10
     }
-    window_duration_ms: 1000
+    window_duration_ms: 200
     window_step_ms: 100
 }
-signal_position: 0.3333
+signal_position: 0.2
