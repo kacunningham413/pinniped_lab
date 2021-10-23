@@ -99,6 +99,9 @@ def gen_chirp_time_series(
                  sound_gen_config.chirp_config.stop_freq,
                  method=sweep_methods[
                    sound_gen_config.chirp_config.sweep_method])
+  #TODO: Added this windowing here to help when the signal is shorter than noise
+  # and position is set. Should move windowing to soun gen config and remove
+  # from the signal excess calculation.
   ts = ts * sig.windows.tukey(len(ts))
   return ts
 
@@ -181,7 +184,7 @@ class Sound:
 
   @property
   def duration_ms(self):
-    return len(self._times)/self.sampling_freq*1000
+    return len(self._times) / self.sampling_freq * 1000
 
   @classmethod
   def sound_from_wav(cls, wav_path: str) -> Sound:
@@ -253,7 +256,7 @@ class Sound:
     for time_slice in slices:
       segment = self._time_series[time_slice.start:time_slice.stop]
       rms = np.sqrt(np.mean(segment ** 2))
-      spls[time_slice] = 20 * np.log10(rms + 10**-10)
+      spls[time_slice] = 20 * np.log10(rms + 10 ** -10)
     return spls
 
   def get_windowed_spl_by_bands(

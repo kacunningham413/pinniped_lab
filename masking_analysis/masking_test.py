@@ -42,6 +42,7 @@ class MaskingTest(unittest.TestCase):
   def test_masking_analyzer_from_config(self):
     analyzer = masking_analyzer_from_exp_config_txt(
       './test_data/experiment_config_example.textproto')
+    self.assertIsInstance(analyzer, MaskingAnalyzer)
 
 
 if __name__ == '__main__':

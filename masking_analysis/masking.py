@@ -88,7 +88,7 @@ class MaskingAnalyzer:
              range(0, int(self.noise.duration_ms),
                    self.masking_config.window_step_ms)]
     # Offset times to center of sliding window
-    times = [x + self.masking_config.window_duration_ms/2 for x in times]
+    times = [x + self.masking_config.window_duration_ms / 2 for x in times]
     return times
 
   def plot_signal_and_noise_spectrogram(self):
