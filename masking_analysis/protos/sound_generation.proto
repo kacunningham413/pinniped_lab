@@ -5,6 +5,7 @@ package sound;
 message SoundGenConfig {
   int64 fs = 1;  // sampling frequency (Hz)
   int64 duration = 2;  // (sec)
+  SoundCalibrationConfig calibration = 7;
 
   oneof type {
     Wavfile wavfile_config = 6;
@@ -12,6 +13,10 @@ message SoundGenConfig {
     FlatSpectrumNoise flat_spectrum_noise_config = 4;
     Chirp chirp_config = 5;
   }
+}
+
+message SoundCalibrationConfig {
+  float spl = 1;
 }
 
 message Wavfile {
