@@ -7,10 +7,15 @@ message SoundGenConfig {
   int64 duration = 2;  // (sec)
 
   oneof type {
+    Wavfile wavfile_config = 6;
     PureTone pure_tone_config = 3;
     FlatSpectrumNoise flat_spectrum_noise_config = 4;
     Chirp chirp_config = 5;
   }
+}
+
+message Wavfile {
+  string wav_path = 1;
 }
 
 message PureTone {

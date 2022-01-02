@@ -7,6 +7,7 @@ import numpy as np
 
 from .sound import Sound, FreqBand
 
+from scipy import signal as sig
 from masking_analysis.protos import masking_config_pb2, experiment_config_pb2
 from typing import MutableMapping
 
@@ -44,6 +45,37 @@ def get_padded_signal(signal: Sound, noise: Sound,
   return Sound(padded_signal, signal.sampling_freq)
 
 
+def match_fs_via_downsampling(sound_1: Sound, sound_2: Sound) -> (Sound, Sound):
+  """
+  Matches the sampling frequencies of two Sounds.
+
+  If the sampling frequencies of sound_1 and sound_2 are unequal, the Sound with
+  the greater sampling frequencies is returned as an equivalent Sound, but
+  downsampled to the sampling frequency of the other sound.
+
+  Args:
+    sound_1: First sound to match.
+    sound_2: Second sound to match.
+
+  Returns:
+    (sound_1, sound_2) with matched sampling frequencies.
+  """
+
+  def _downsample_sound(sound: Sound, new_fs: int) -> Sound:
+    sos = sig.butter(10, new_fs / 2,  btype='lp', output='sos', fs=sound.sampling_freq)
+    filtered_ts = sig.sosfilt(sos, sound.time_series)
+    target_samples = int(sound.duration_ms/1000 * new_fs)
+    resampled_ts = sig.resample(filtered_ts, target_samples)
+    return Sound(resampled_ts, new_fs)
+
+  fs_1, fs_2 = sound_1.sampling_freq, sound_2.sampling_freq
+  if fs_1 > fs_2:
+    sound_1 = _downsample_sound(sound_1, fs_2)
+  elif fs_2 > fs_1:
+    sound_2 = _downsample_sound(sound_2, fs_1)
+  return sound_1, sound_2
+
+
 class MaskingAnalyzer:
   def __init__(self, signal: Sound, noise: Sound,
                masking_config: masking_config_pb2):
@@ -57,7 +89,7 @@ class MaskingAnalyzer:
     noise = Sound.sound_from_gen_config(experiment_config.noise_gen_config)
     masking_config = experiment_config.masking_config
     if signal.sampling_freq != noise.sampling_freq:
-      raise ValueError("Signal and Noise must have equal sampling frequencies.")
+      signal, noise = match_fs_via_downsampling(signal, noise)
     signal = get_padded_signal(signal, noise, experiment_config.signal_position)
     return MaskingAnalyzer(signal, noise, masking_config)
 

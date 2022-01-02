@@ -195,7 +195,9 @@ class Sound:
   @classmethod
   def sound_from_gen_config(
       cls, sound_gen_config: sound_generation_pb2.SoundGenConfig) -> Sound:
-    if sound_gen_config.HasField('pure_tone_config'):
+    if sound_gen_config.HasField('wavfile_config'):
+      return Sound.sound_from_wav(sound_gen_config.wavfile_config.wav_path)
+    elif sound_gen_config.HasField('pure_tone_config'):
       time_series = gen_pure_tone_time_series(sound_gen_config)
       return Sound(time_series, sound_gen_config.fs)
     elif sound_gen_config.HasField('flat_spectrum_noise_config'):
