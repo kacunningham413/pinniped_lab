@@ -99,9 +99,9 @@ def gen_chirp_time_series(
                  sound_gen_config.chirp_config.stop_freq,
                  method=sweep_methods[
                    sound_gen_config.chirp_config.sweep_method])
-  #TODO: Added this windowing here to help when the signal is shorter than noise
-  # and position is set. Should move windowing to soun gen config and remove
-  # from the signal excess calculation.
+  # TODO: Added this windowing here to help when the signal is shorter than
+  #  noise and position is set. Should move windowing to sound gen config and
+  #  remove from the signal excess calculation.
   ts = ts * sig.windows.tukey(len(ts))
   return ts
 
@@ -114,6 +114,42 @@ def gen_flat_spectrum_time_series(
                       sound_gen_config.flat_spectrum_noise_config.start_freq,
                       sound_gen_config.flat_spectrum_noise_config.stop_freq,
                       sound_gen_config.flat_spectrum_noise_config.filter_order)
+
+
+def scale_sound_by_spl(sound: Sound, target_spl: int,
+                       tolerance: float = 0.1) -> Sound:
+  """Returns a copy of the input sound scaled to target SPL.
+
+  Target spl is for the entire duration and frequency range.
+
+  Args:
+    sound: Input sound to scale.
+    target_spl: Target spl to scale to in dB re 1 uPa.
+    tolerance: Resulting spl will be within this tolerance.
+  """
+
+  def _bin_search(lower: float, upper: float) -> float:
+    mid = (lower + upper) / 2
+    mid_spl = Sound(sound.time_series * mid, sound.sampling_freq).get_spl()
+    if np.abs(mid_spl - target_spl) < tolerance:
+      return mid
+    elif mid_spl < target_spl:
+      return _bin_search(mid, upper)
+    elif mid_spl > target_spl:
+      return _bin_search(lower, mid)
+
+  max_scale = 1
+  min_scale = 1
+  spl = sound.get_spl()
+  while spl > target_spl:
+    min_scale /= 2
+    spl = Sound(sound.time_series * min_scale, sound.sampling_freq).get_spl()
+  spl = sound.get_spl()
+  while spl < target_spl:
+    max_scale = max_scale * 2
+    spl = Sound(sound.time_series * max_scale, sound.sampling_freq).get_spl()
+  scale_factor = _bin_search(min_scale, max_scale)
+  return Sound(sound.time_series * scale_factor, sound.sampling_freq)
 
 
 class FreqBand:
@@ -196,18 +232,21 @@ class Sound:
   def sound_from_gen_config(
       cls, sound_gen_config: sound_generation_pb2.SoundGenConfig) -> Sound:
     if sound_gen_config.HasField('wavfile_config'):
-      return Sound.sound_from_wav(sound_gen_config.wavfile_config.wav_path)
+      sound = Sound.sound_from_wav(sound_gen_config.wavfile_config.wav_path)
     elif sound_gen_config.HasField('pure_tone_config'):
       time_series = gen_pure_tone_time_series(sound_gen_config)
-      return Sound(time_series, sound_gen_config.fs)
+      sound = Sound(time_series, sound_gen_config.fs)
     elif sound_gen_config.HasField('flat_spectrum_noise_config'):
       time_series = gen_flat_spectrum_time_series(sound_gen_config)
-      return Sound(time_series, sound_gen_config.fs)
+      sound = Sound(time_series, sound_gen_config.fs)
     elif sound_gen_config.HasField('chirp_config'):
       time_series = gen_chirp_time_series(sound_gen_config)
-      return Sound(time_series, sound_gen_config.fs)
+      sound = Sound(time_series, sound_gen_config.fs)
     else:
       raise ValueError("Unrecognized Sound Generation Config type.")
+    if sound_gen_config.HasField('calibration'):
+      sound = scale_sound_by_spl(sound, sound_gen_config.calibration.spl)
+    return sound
 
   @classmethod
   def sound_from_gen_config_path(cls, sound_gen_config_path: str) -> Sound:
@@ -215,6 +254,15 @@ class Sound:
     with open(sound_gen_config_path, 'r') as f:
       text_format.Parse(f.read(), sound_generation_pb2)
     return Sound.sound_from_gen_config(sound_gen_config)
+
+  def get_spl(self) -> float:
+    """Returns sound pressure level re 1uPa."""
+    mean_of_squares = np.mean(self._time_series ** 2)
+    # Deal with special cases like zero-mean noise
+    if mean_of_squares < 10 * sys.float_info.min:
+      return 0
+    rms = np.sqrt(mean_of_squares)
+    return 20 * np.log10(rms)
 
   def compute_spectrogram(self, **kwargs):
     return sig.spectrogram(self._time_series, self._sampling_freq, **kwargs)

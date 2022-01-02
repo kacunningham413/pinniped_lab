@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n.masking_analysis/protos/sound_generation.proto\x12\x05sound\"\xf3\x01\n\x0eSoundGenConfig\x12\n\n\x02\x66s\x18\x01 \x01(\x03\x12\x10\n\x08\x64uration\x18\x02 \x01(\x03\x12(\n\x0ewavfile_config\x18\x06 \x01(\x0b\x32\x0e.sound.WavfileH\x00\x12+\n\x10pure_tone_config\x18\x03 \x01(\x0b\x32\x0f.sound.PureToneH\x00\x12>\n\x1a\x66lat_spectrum_noise_config\x18\x04 \x01(\x0b\x32\x18.sound.FlatSpectrumNoiseH\x00\x12$\n\x0c\x63hirp_config\x18\x05 \x01(\x0b\x32\x0c.sound.ChirpH\x00\x42\x06\n\x04type\"\x1b\n\x07Wavfile\x12\x10\n\x08wav_path\x18\x01 \x01(\t\"\x1f\n\x08PureTone\x12\x13\n\x0b\x63\x65nter_freq\x18\x01 \x01(\x03\"\xa9\x01\n\x05\x43hirp\x12\x12\n\nstart_freq\x18\x01 \x01(\x03\x12\x11\n\tstop_freq\x18\x02 \x01(\x03\x12.\n\x0csweep_method\x18\x03 \x01(\x0e\x32\x18.sound.Chirp.SweepMethod\"I\n\x0bSweepMethod\x12\n\n\x06LINEAR\x10\x00\x12\r\n\tQUADRATIC\x10\x01\x12\x0f\n\x0bLOGARITHMIC\x10\x02\x12\x0e\n\nHYPERBOLIC\x10\x03\"P\n\x11\x46latSpectrumNoise\x12\x14\n\x0c\x66ilter_order\x18\x03 \x01(\x03\x12\x12\n\nstart_freq\x18\x01 \x01(\x03\x12\x11\n\tstop_freq\x18\x02 \x01(\x03\x62\x06proto3'
+  serialized_pb=b'\n.masking_analysis/protos/sound_generation.proto\x12\x05sound\"\xa7\x02\n\x0eSoundGenConfig\x12\n\n\x02\x66s\x18\x01 \x01(\x03\x12\x10\n\x08\x64uration\x18\x02 \x01(\x03\x12\x32\n\x0b\x63\x61libration\x18\x07 \x01(\x0b\x32\x1d.sound.SoundCalibrationConfig\x12(\n\x0ewavfile_config\x18\x06 \x01(\x0b\x32\x0e.sound.WavfileH\x00\x12+\n\x10pure_tone_config\x18\x03 \x01(\x0b\x32\x0f.sound.PureToneH\x00\x12>\n\x1a\x66lat_spectrum_noise_config\x18\x04 \x01(\x0b\x32\x18.sound.FlatSpectrumNoiseH\x00\x12$\n\x0c\x63hirp_config\x18\x05 \x01(\x0b\x32\x0c.sound.ChirpH\x00\x42\x06\n\x04type\"%\n\x16SoundCalibrationConfig\x12\x0b\n\x03spl\x18\x01 \x01(\x02\"\x1b\n\x07Wavfile\x12\x10\n\x08wav_path\x18\x01 \x01(\t\"\x1f\n\x08PureTone\x12\x13\n\x0b\x63\x65nter_freq\x18\x01 \x01(\x03\"\xa9\x01\n\x05\x43hirp\x12\x12\n\nstart_freq\x18\x01 \x01(\x03\x12\x11\n\tstop_freq\x18\x02 \x01(\x03\x12.\n\x0csweep_method\x18\x03 \x01(\x0e\x32\x18.sound.Chirp.SweepMethod\"I\n\x0bSweepMethod\x12\n\n\x06LINEAR\x10\x00\x12\r\n\tQUADRATIC\x10\x01\x12\x0f\n\x0bLOGARITHMIC\x10\x02\x12\x0e\n\nHYPERBOLIC\x10\x03\"P\n\x11\x46latSpectrumNoise\x12\x14\n\x0c\x66ilter_order\x18\x03 \x01(\x03\x12\x12\n\nstart_freq\x18\x01 \x01(\x03\x12\x11\n\tstop_freq\x18\x02 \x01(\x03\x62\x06proto3'
 )
 
 
@@ -54,8 +54,8 @@ _CHIRP_SWEEPMETHOD = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=462,
-  serialized_end=535,
+  serialized_start=553,
+  serialized_end=626,
 )
 _sym_db.RegisterEnumDescriptor(_CHIRP_SWEEPMETHOD)
 
@@ -83,28 +83,35 @@ _SOUNDGENCONFIG = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='wavfile_config', full_name='sound.SoundGenConfig.wavfile_config', index=2,
+      name='calibration', full_name='sound.SoundGenConfig.calibration', index=2,
+      number=7, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='wavfile_config', full_name='sound.SoundGenConfig.wavfile_config', index=3,
       number=6, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='pure_tone_config', full_name='sound.SoundGenConfig.pure_tone_config', index=3,
+      name='pure_tone_config', full_name='sound.SoundGenConfig.pure_tone_config', index=4,
       number=3, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='flat_spectrum_noise_config', full_name='sound.SoundGenConfig.flat_spectrum_noise_config', index=4,
+      name='flat_spectrum_noise_config', full_name='sound.SoundGenConfig.flat_spectrum_noise_config', index=5,
       number=4, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='chirp_config', full_name='sound.SoundGenConfig.chirp_config', index=5,
+      name='chirp_config', full_name='sound.SoundGenConfig.chirp_config', index=6,
       number=5, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -128,7 +135,39 @@ _SOUNDGENCONFIG = _descriptor.Descriptor(
     fields=[]),
   ],
   serialized_start=58,
-  serialized_end=301,
+  serialized_end=353,
+)
+
+
+_SOUNDCALIBRATIONCONFIG = _descriptor.Descriptor(
+  name='SoundCalibrationConfig',
+  full_name='sound.SoundCalibrationConfig',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='spl', full_name='sound.SoundCalibrationConfig.spl', index=0,
+      number=1, type=2, cpp_type=6, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=355,
+  serialized_end=392,
 )
 
 
@@ -159,8 +198,8 @@ _WAVFILE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=303,
-  serialized_end=330,
+  serialized_start=394,
+  serialized_end=421,
 )
 
 
@@ -191,8 +230,8 @@ _PURETONE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=332,
-  serialized_end=363,
+  serialized_start=423,
+  serialized_end=454,
 )
 
 
@@ -238,8 +277,8 @@ _CHIRP = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=366,
-  serialized_end=535,
+  serialized_start=457,
+  serialized_end=626,
 )
 
 
@@ -284,10 +323,11 @@ _FLATSPECTRUMNOISE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=537,
-  serialized_end=617,
+  serialized_start=628,
+  serialized_end=708,
 )
 
+_SOUNDGENCONFIG.fields_by_name['calibration'].message_type = _SOUNDCALIBRATIONCONFIG
 _SOUNDGENCONFIG.fields_by_name['wavfile_config'].message_type = _WAVFILE
 _SOUNDGENCONFIG.fields_by_name['pure_tone_config'].message_type = _PURETONE
 _SOUNDGENCONFIG.fields_by_name['flat_spectrum_noise_config'].message_type = _FLATSPECTRUMNOISE
@@ -307,6 +347,7 @@ _SOUNDGENCONFIG.fields_by_name['chirp_config'].containing_oneof = _SOUNDGENCONFI
 _CHIRP.fields_by_name['sweep_method'].enum_type = _CHIRP_SWEEPMETHOD
 _CHIRP_SWEEPMETHOD.containing_type = _CHIRP
 DESCRIPTOR.message_types_by_name['SoundGenConfig'] = _SOUNDGENCONFIG
+DESCRIPTOR.message_types_by_name['SoundCalibrationConfig'] = _SOUNDCALIBRATIONCONFIG
 DESCRIPTOR.message_types_by_name['Wavfile'] = _WAVFILE
 DESCRIPTOR.message_types_by_name['PureTone'] = _PURETONE
 DESCRIPTOR.message_types_by_name['Chirp'] = _CHIRP
@@ -319,6 +360,13 @@ SoundGenConfig = _reflection.GeneratedProtocolMessageType('SoundGenConfig', (_me
   # @@protoc_insertion_point(class_scope:sound.SoundGenConfig)
   })
 _sym_db.RegisterMessage(SoundGenConfig)
+
+SoundCalibrationConfig = _reflection.GeneratedProtocolMessageType('SoundCalibrationConfig', (_message.Message,), {
+  'DESCRIPTOR' : _SOUNDCALIBRATIONCONFIG,
+  '__module__' : 'masking_analysis.protos.sound_generation_pb2'
+  # @@protoc_insertion_point(class_scope:sound.SoundCalibrationConfig)
+  })
+_sym_db.RegisterMessage(SoundCalibrationConfig)
 
 Wavfile = _reflection.GeneratedProtocolMessageType('Wavfile', (_message.Message,), {
   'DESCRIPTOR' : _WAVFILE,
