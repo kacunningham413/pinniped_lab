@@ -6,13 +6,17 @@ signal_gen_config {
     stop_freq: 1600
     sweep_method: 2
   }
-  spl: 80
+  calibration {
+    spl: 80
+  }
 }
 noise_gen_config {
   wavfile_config {
     wav_path: 'test_data/white_noise.wav'
   }
-  spl: 100
+  calibration {
+    spl: 100
+  }
 }
 masking_config {
   auditory_band_config {
