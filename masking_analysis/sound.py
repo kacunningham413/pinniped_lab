@@ -179,6 +179,9 @@ class FreqBand:
       return (self.start_freq == other.start_freq) and (
           self.stop_freq == other.stop_freq)
 
+  def to_string(self):
+    return f'{self.start_freq}Hz-{self.stop_freq}Hz'
+
 
 class TimeSlice:
   """
@@ -196,6 +199,9 @@ class TimeSlice:
   def __eq__(self, other: TimeSlice):
     if type(other) is type(self):
       return (self.start == other.start) and (self.stop == other.stop)
+
+  def to_string(self):
+    return f'{self.start}-{self.stop}'
 
 
 class Sound:
@@ -319,7 +325,6 @@ class Sound:
       spls[band] = sound._get_windowed_spl(win_duration_ms, step_ms)
     return spls
 
-  # TODO(kane): Add support for plot configuration
   def plot_spectrogram(self,
                        f_min=0,
                        f_max=None,

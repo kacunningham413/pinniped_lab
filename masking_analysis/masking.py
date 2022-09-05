@@ -5,7 +5,7 @@ import logging
 import matplotlib.pyplot as plt
 import numpy as np
 
-from .sound import Sound, FreqBand
+from .sound import Sound, FreqBand, TimeSlice
 
 from scipy import signal as sig
 from masking_analysis.protos import masking_config_pb2, experiment_config_pb2
@@ -94,17 +94,32 @@ class MaskingAnalyzer:
     signal = get_padded_signal(signal, noise, experiment_config.signal_position)
     return MaskingAnalyzer(signal, noise, masking_config)
 
-  def get_signal_excess(self):
+  def _get_signal_spls(self) -> MutableMapping[
+    FreqBand, MutableMapping[TimeSlice, int]]:
+    """Returns signal windowed sound pressure levels."""
     signal_spls = self.signal.get_windowed_spl_by_bands(
       self.masking_config.auditory_band_config,
       self.masking_config.window_duration_ms,
       self.masking_config.window_step_ms
     )
+    return signal_spls
+
+  def _get_noise_spls(self) -> MutableMapping[
+    FreqBand, MutableMapping[TimeSlice, int]]:
+    """Returns noise windowed sound pressure levels."""
     noise_spls = self.noise.get_windowed_spl_by_bands(
       self.masking_config.auditory_band_config,
       self.masking_config.window_duration_ms,
       self.masking_config.window_step_ms
     )
+    return noise_spls
+
+  def get_signal_excess(self, signal_spls=None, noise_spls=None):
+    """Returns windowed singal excesses."""
+    if signal_spls is None:
+      signal_spls = self._get_signal_spls()
+    if noise_spls is None:
+      noise_spls = self._get_noise_spls()
     assert (signal_spls.keys() == noise_spls.keys())
     signal_excesses: MutableMapping[FreqBand, np.ndarray] = {}
     for band in self.masking_config.auditory_band_config.auditory_bands:
@@ -164,3 +179,26 @@ class MaskingAnalyzer:
     plt.ylabel('Signal Excess [dB]')
     plt.xlabel('Time [msec]')
     plt.legend(loc='upper right')
+    plt.show()
+
+  def print_signal_excesses_csv(self):
+    """Prints data in CSV format.
+
+    Since data are three-dimensional, we print a sheet for each auditory band.
+    Each time window includes signal SPL, noise SPL, and signal excess.
+    """
+    signal_spls = self._get_signal_spls()
+    noise_spls = self._get_noise_spls()
+    se = self.get_signal_excess(signal_spls=signal_spls, noise_spls=noise_spls)
+
+    for band, excesses in se.items():
+      print()
+      print(band.to_string())
+      print('Time Slice, Signal SPL (dB), Noise SPL (dB), Signal Excess (dB)')
+      signal_band_spls = signal_spls[band]
+      noise_band_spls = noise_spls[band]
+      time_slices = signal_band_spls.keys()
+      for ts, signal, noise, excess in zip(time_slices,
+                                           signal_band_spls.values(),
+                                           noise_band_spls.values(), excesses):
+        print(f'{ts.to_string()},{signal},{noise},{excess}')
