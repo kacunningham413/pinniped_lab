@@ -178,6 +178,7 @@ class MaskingAnalyzer:
     plt.xlim(t_min, t_max)
     plt.ylabel('Signal Excess [dB]')
     plt.xlabel('Time [msec]')
+    plt.axhline(y=0, color='k', linestyle='--')
     plt.legend(loc='upper right')
     plt.show()
 
