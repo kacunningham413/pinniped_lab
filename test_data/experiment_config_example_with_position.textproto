@@ -6,7 +6,9 @@ signal_gen_config {
     stop_freq: 1600
     sweep_method: 2
   }
-  spl: 80
+  calibration {
+    spl: 80
+  }
 }
 noise_gen_config {
   fs: 5000
@@ -16,8 +18,9 @@ noise_gen_config {
     stop_freq: 800
     filter_order: 10
   }
-
-  spl: 90
+  calibration {
+    spl: 80
+  }
 }
 masking_config {
   auditory_band_config {
