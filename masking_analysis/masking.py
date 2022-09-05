@@ -62,9 +62,10 @@ def match_fs_via_downsampling(sound_1: Sound, sound_2: Sound) -> (Sound, Sound):
   """
 
   def _downsample_sound(sound: Sound, new_fs: int) -> Sound:
-    sos = sig.butter(10, new_fs / 2,  btype='lp', output='sos', fs=sound.sampling_freq)
+    sos = sig.butter(10, new_fs / 2, btype='lp', output='sos',
+                     fs=sound.sampling_freq)
     filtered_ts = sig.sosfilt(sos, sound.time_series)
-    target_samples = int(sound.duration_ms/1000 * new_fs)
+    target_samples = int(sound.duration_ms / 1000 * new_fs)
     resampled_ts = sig.resample(filtered_ts, target_samples)
     return Sound(resampled_ts, new_fs)
 
@@ -123,13 +124,43 @@ class MaskingAnalyzer:
     times = [x + self.masking_config.window_duration_ms / 2 for x in times]
     return times
 
-  def plot_signal_and_noise_spectrogram(self):
-    summed = add_sounds(self.signal, self.noise)
-    summed.plot_spectrogram()
+  def plot_signal_and_noise_spectrogram(self,
+                                        f_min=0,
+                                        f_max=None,
+                                        t_min=0,
+                                        t_max=None):
+    """Plots spectrogram of signal in noise.
 
-  def plot_signal_excesses(self):
+    Args:
+      f_min: Min frequency on y-axis.
+      f_max: Max frequency on y-axis.
+      t_min: Min time on x-axis in msec.
+      t_max: Max time on x-axis in msec.
+    """
+    summed = add_sounds(self.signal, self.noise)
+    summed.plot_spectrogram(f_min=f_min, f_max=f_max, t_min=t_min, t_max=t_max)
+
+  def plot_signal_excesses(self,
+                           db_min=-20,
+                           db_max=80,
+                           t_min=0,
+                           t_max=None):
+    """Plots signal excesses by frequency band.
+
+    Args:
+      db_min: Min decibels on y-axis.
+      db_max: Max decibels on y-axis.
+      t_min: Min time on x-axis in msec.
+      t_max: Max time on x-axis in msec.
+    """
     se = self.get_signal_excess()
     se_t = self.get_signal_excess_times()
     for band, excess in se.items():
       plt.plot(se_t, excess, label=f'{band.start_freq}-{band.stop_freq}Hz')
+    plt.ylim(db_min, db_max)
+    if t_max is None:
+      t_max = se_t[-1]
+    plt.xlim(t_min, t_max)
+    plt.ylabel('Signal Excess [dB]')
+    plt.xlabel('Time [msec]')
     plt.legend(loc='upper right')
