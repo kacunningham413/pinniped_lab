@@ -320,17 +320,41 @@ class Sound:
     return spls
 
   # TODO(kane): Add support for plot configuration
-  def plot_spectrogram(self, **kwargs):
+  def plot_spectrogram(self,
+                       f_min=0,
+                       f_max=None,
+                       t_min=0,
+                       t_max=None,
+                       **kwargs):
+    """Plots spectrogram of Sound.
+
+    Args:
+      f_min: Min frequency on y-axis.
+      f_max: Max frequency on y-axis.
+      t_min: Min time on x-axis in msec.
+      t_max: Max time on x-axis in msec.
+    """
     f, t, Sxx = self.compute_spectrogram(**kwargs)
-    plt.pcolormesh(t, f, Sxx, shading='auto')
+
+    if f_max is None:
+      f_max = self._sampling_freq / 2
+
+    t_msec = [x*1000 for x in t]
+    if t_max is None:
+      t_max = t_msec[-1]
+
+    plt.pcolormesh(t_msec, f, Sxx, shading='auto')
     plt.ylabel('Frequency [Hz]')
-    plt.xlabel('Time [sec]')
-    plt.ylim(0, self._sampling_freq / 2)
+    plt.xlabel('Time [msec]')
+    plt.ylim(f_min, f_max)
+    plt.xlim(t_min, t_max)
     plt.show()
 
   # TODO(kane): Add support for plot configuration
   def plot_time_series(self):
-    plt.plot(self._times, self._time_series)
+    plt.plot(
+      [x*1000 for x in self._times],  # Plot in msec, not sec.
+      self._time_series)
     plt.ylabel('Amplitude')
-    plt.xlabel('Time [sec]')
+    plt.xlabel('Time [msec]')
     plt.show()
